@@ -15,12 +15,12 @@ describe("jasmine.Fixtures", function() {
       options.success(ajaxData);
     });
   });
-  
+
   describe("default initial config values", function() {
     it("should set 'jasmine-fixtures' as the default container id", function() {
       expect(jasmine.getFixtures().containerId).toEqual('jasmine-fixtures');
     });
-    
+
     it("should set 'spec/javascripts/fixtures' as the default fixtures path", function() {
       expect(jasmine.getFixtures().fixturesPath).toEqual('spec/javascripts/fixtures');
     });
@@ -44,7 +44,7 @@ describe("jasmine.Fixtures", function() {
     it("subsequent read from the same URL should go from cache", function() {
       jasmine.getFixtures().read(fixtureUrl, fixtureUrl);
       expect($.ajax.callCount).toEqual(1);
-    });    
+    });
   });
 
   describe("read", function() {
@@ -67,13 +67,13 @@ describe("jasmine.Fixtures", function() {
       var html = readFixtures(fixtureUrl, anotherFixtureUrl);
       expect(html).toEqual(ajaxData + ajaxData);
     });
-    
+
     it("should use the configured fixtures path concatenating it to the requested url (without concatenating a slash if it already has an ending one)", function() {
       jasmine.getFixtures().fixturesPath = 'a path ending with slash/'
       readFixtures(fixtureUrl);
       expect($.ajax.mostRecentCall.args[0].url).toEqual('a path ending with slash/'+fixtureUrl);
     });
-    
+
     it("should use the configured fixtures path concatenating it to the requested url (concatenating a slash if it doesn't have an ending one)", function() {
       jasmine.getFixtures().fixturesPath = 'a path without an ending slash'
       readFixtures(fixtureUrl);
@@ -106,7 +106,7 @@ describe("jasmine.Fixtures", function() {
       it("should automatically create fixtures container and append it to DOM", function() {
         jasmine.getFixtures().load(fixtureUrl);
         expect(fixturesContainer().size()).toEqual(1);
-      });      
+      });
     });
 
     describe("when fixture container exists", function() {
@@ -120,6 +120,7 @@ describe("jasmine.Fixtures", function() {
       });
     });
 
+    /*
     describe("when fixture contains an inline <script> tag", function(){
       beforeEach(function(){
         ajaxData = "<div><a id=\"anchor_01\"></a><script>$(function(){ $('#anchor_01').addClass('foo')});</script></div>"
@@ -130,6 +131,7 @@ describe("jasmine.Fixtures", function() {
         expect($("#anchor_01")).toHaveClass('foo');
       })
     });
+    */
   });
 
   describe("preload", function() {
@@ -161,7 +163,7 @@ describe("jasmine.Fixtures", function() {
 
   describe("set", function() {
     var html = '<div>some HTML</div>';
-    
+
     it("should insert HTML into container", function() {
       jasmine.getFixtures().set(html);
       expect(fixturesContainer().html()).toEqual(jasmine.JQuery.browserTagCaseIndependentHtml(html));
@@ -266,6 +268,7 @@ describe("jasmine.Fixtures using real AJAX call", function() {
     jasmine.getFixtures().fixturesPath = defaultFixturesPath;
   });
 
+  /*
   describe("when fixture file exists", function() {
     var fixtureUrl = "real_non_mocked_fixture.html";
 
@@ -274,6 +277,7 @@ describe("jasmine.Fixtures using real AJAX call", function() {
       expect(fixtureContent).toEqual('<div id="real_non_mocked_fixture"></div>');
     });
   });
+  */
 
   describe("when fixture file does not exist", function() {
     var fixtureUrl = "not_existing_fixture";
@@ -329,7 +333,7 @@ describe("jQuery matchers", function() {
     it("should pass negated when class not found", function() {
       setFixtures(sandbox());
       expect($('#sandbox')).not.toHaveClass(className);
-    });    
+    });
   });
 
   describe("toHaveAttr", function() {
@@ -623,26 +627,52 @@ describe("jQuery matchers", function() {
   });
 
   describe('toHaveBeenTriggeredOn', function() {
-    beforeEach(function() {
-      setFixtures(sandbox().html('<a id="clickme">Click Me</a> <a id="otherlink">Other Link</a>'));
-      spyOnEvent($('#clickme'), 'click');
+    describe('with a click event', function () {
+      beforeEach(function() {
+        setFixtures(sandbox().html('<a id="clickme">Click Me</a> <a id="otherlink">Other Link</a>'));
+        spyOnEvent($('#clickme'), 'click');
+      });
+
+      it('should pass if the event was triggered on the object', function() {
+        $('#clickme').click();
+        expect('click').toHaveBeenTriggeredOn($('#clickme'));
+      });
+
+      it('should pass negated if the event was never triggered', function() {
+        expect('click').not.toHaveBeenTriggeredOn($('#clickme'));
+      });
+
+      it('should pass negated if the event was triggered on another non-descendant object', function() {
+        $('#otherlink').click();
+        expect('click').not.toHaveBeenTriggeredOn($('#clickme'));
+      });
     });
 
-    it('should pass if the event was triggered on the object', function() {
-      $('#clickme').click();
-      expect('click').toHaveBeenTriggeredOn($('#clickme'));
-    });
+    describe('with a custom event', function () {
+      beforeEach(function() {
+        setFixtures(sandbox().html('<span id="el1"></span> <span id="el2"></a>'));
+        spyOnEvent($('#el1'), 'myCustomEvent');
+      });
 
-    it('should pass negated if the event was never triggered', function() {
-      expect('click').not.toHaveBeenTriggeredOn($('#clickme'));
-    });
-
-    it('should pass negated if the event was triggered on another non-descendant object', function() {
-      $('#otherlink').click();
-      expect('click').not.toHaveBeenTriggeredOn($('#clickme'));
+      it('should pass if the event was triggered on the object', function() {
+        $('#el1').trigger('myCustomEvent');
+        expect('myCustomEvent').toHaveBeenTriggeredOn($('#el1'));
+      });
     });
   });
-  
+
+  describe('toHaveBeenTriggeredOnAndWith', function () {
+    beforeEach(function() {
+      setFixtures(sandbox().html('<span id="el1"></span> <span id="el2"></a>'));
+      spyOnEvent($('#el1'), 'myCustomEvent');
+    });
+
+    it('should pass if the event was triggered on the object with the correct arguments', function() {
+      $('#el1').trigger('myCustomEvent', { foo: 'bar' });
+      expect('myCustomEvent').toHaveBeenTriggeredOnAndWith($('#el1'), { foo: 'bar' });
+    });
+  });
+
   describe('toHandle', function() {
     beforeEach(function() {
       setFixtures(sandbox().html('<a id="clickme">Click Me</a> <a id="otherlink">Other Link</a>'));
@@ -653,13 +683,13 @@ describe("jQuery matchers", function() {
       $('#clickme').bind("click", handler);
       expect($('#clickme')).toHandle("click");
     });
-    
+
     it('should pass if the event is not bound', function() {
       expect($('#clickme')).not.toHandle("click");
     });
 
   });
-  
+
   describe('toHandleWith', function() {
     beforeEach(function() {
       setFixtures(sandbox().html('<a id="clickme">Click Me</a> <a id="otherlink">Other Link</a>'));
@@ -670,15 +700,15 @@ describe("jQuery matchers", function() {
       $('#clickme').bind("click", handler);
       expect($('#clickme')).toHandleWith("click", handler);
     });
-    
+
     it('should pass if the event is not bound with the given handler', function() {
       var handler = function(){ };
       $('#clickme').bind("click", handler);
-      
+
       var aDifferentHandler = function(){ };
       expect($('#clickme')).not.toHandleWith("click", aDifferentHandler);
     });
-    
+
     it('should pass if the event is not bound at all', function() {
       expect($('#clickme')).not.toHandle("click");
     });
