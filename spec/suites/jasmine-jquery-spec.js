@@ -491,6 +491,31 @@ describe("jQuery matchers", function() {
     });
   });
 
+  describe("toHaveCss", function () {
+    beforeEach(function () {
+      setFixtures($('<div id="div">'));
+      this.$div = $('#div');
+    });
+
+    // PROTIP: if this suddenly starts failing locally, check that your browser's zoom level is set to 0.
+    // We've seen jQuery report pixel values differently at different zoom levels.
+    it('tests that a given node has a given CSS attribute name and value', function () {
+      this.$div.css('margin-top', '5px');
+      expect(this.$div).toHaveCss('margin-top', '5px');
+    });
+
+    it('can take a regex for the value', function () {
+      this.$div.css('margin-right', '100px');
+      expect(this.$div).toHaveCss('margin-right', /100px/);
+    });
+
+    it('converts colors to rgb format', function () {
+      //simulate IE returning color as a hex string:
+      spyOn(this.$div, 'css').andReturn('#0000ff');
+      expect(this.$div).toHaveCss('background-color', 'rgb(0, 0, 255)');
+    });
+  });
+
   describe("toBeVisible", function() {
     it("should pass on visible element", function() {
       setFixtures(sandbox());
@@ -651,7 +676,7 @@ describe("jQuery matchers", function() {
     describe('with a custom event', function () {
       beforeEach(function() {
         setFixtures(sandbox().html('<span id="el1"></span> <span id="el2"></a>'));
-        spyOnEvent($('#el1'), 'myCustomEvent');
+        spyOnEvent(('#el1'), 'myCustomEvent');
       });
 
       it('should pass if the event was triggered on the object', function() {
