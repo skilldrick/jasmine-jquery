@@ -696,6 +696,13 @@ describe("jQuery matchers", function() {
       $('#el1').trigger('myCustomEvent', { foo: 'bar' });
       expect('myCustomEvent').toHaveBeenTriggeredOnAndWith($('#el1'), { foo: 'bar' });
     });
+
+    it('should pass with multiple triggers', function() {
+      $('#el1').trigger('myCustomEvent', { foo: 'bar' });
+      $('#el1').trigger('myCustomEvent', { bar: 'baz' });
+      expect('myCustomEvent').toHaveBeenTriggeredOnAndWith($('#el1'), { bar: 'baz' });
+      $('#el1').trigger('myCustomEvent', { baz: 'quux' });
+    });
   });
 
   describe('toHandle', function() {
