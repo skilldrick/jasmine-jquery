@@ -692,7 +692,7 @@ describe("jQuery matchers", function() {
       spyOnEvent($('#el1'), 'myCustomEvent');
     });
 
-    it('should pass if the event was triggered on the object with the correct arguments', function() {
+    it('should pass if the event was triggered on the element with the correct arguments', function() {
       $('#el1').trigger('myCustomEvent', { foo: 'bar' });
       expect('myCustomEvent').toHaveBeenTriggeredOnAndWith($('#el1'), { foo: 'bar' });
     });
@@ -700,8 +700,27 @@ describe("jQuery matchers", function() {
     it('should pass with multiple triggers', function() {
       $('#el1').trigger('myCustomEvent', { foo: 'bar' });
       $('#el1').trigger('myCustomEvent', { bar: 'baz' });
-      expect('myCustomEvent').toHaveBeenTriggeredOnAndWith($('#el1'), { bar: 'baz' });
       $('#el1').trigger('myCustomEvent', { baz: 'quux' });
+      expect('myCustomEvent').toHaveBeenTriggeredOnAndWith($('#el1'), { bar: 'baz' });
+    });
+  });
+
+  describe('toHaveBeenTriggeredOn(el).with(args)', function () {
+    beforeEach(function() {
+      setFixtures(sandbox().html('<span id="el1"></span> <span id="el2"></a>'));
+      spyOnEvent($('#el1'), 'myCustomEvent');
+    });
+
+    it('should pass if the event was triggered on the element with the correct arguments', function () {
+      $('#el1').trigger('myCustomEvent', { foo: 'bar' });
+      expect('myCustomEvent').toHaveBeenTriggeredOn($('#el1')).withArg({ foo: 'bar' });
+    });
+
+    it('should pass with multiple triggers', function () {
+      $('#el1').trigger('myCustomEvent', { foo: 'bar' });
+      $('#el1').trigger('myCustomEvent', { bar: 'baz' });
+      $('#el1').trigger('myCustomEvent', { baz: 'quux' });
+      expect('myCustomEvent').toHaveBeenTriggeredOn($('#el1')).withArg({ foo: 'bar' });
     });
   });
 
